@@ -1,27 +1,26 @@
 use aoc_runner_derive::{aoc};
 use std::mem::transmute;
 
-const X: i64 = b'X' as i64;
-const A: i64 = b'A' as i64;
+const X: u8 = b'X' - 1;
+const A: u8 = b'A';
+
+const MASK: u32 = 0x00570041;
 
 #[aoc(day2, part1)]
 fn part1(input_: &[u8]) -> i64 {
     let input = [input_, b"\n"].concat();
 
     unsafe {
-        transmute::<&[u8], &[u16]>(&input[0..input.len() / 2]).iter().fold((0_i64, 0, false), |(val, prev, ctr), chr| match ctr {
-            false => {
-                (val, transmute::<u16, [u8; 2]>(*chr)[0] as i64, true)
-            }
-            true => {
-                let chr     = transmute::<u16, [u8; 2]>(*chr)[0] as i64;
-                let bonus   = chr - X + 1;
-                let outcome = ((prev - A) * 2 + bonus) % 3;
-                
-                (val + (outcome * 3) + bonus, 0, false)
-            }
-        }
-        ).0
+        transmute::<&[u8], &[u32]>(&input[0..input.len() / 4]).iter().map(|chr| {
+            let chrs    = transmute::<u32, [u16; 2]>((*chr & 0x00FF00FF) - MASK);
+
+            let prev    = chrs[0];
+            let curr    = chrs[1];
+
+            let outcome = (prev * 2 + curr) % 3;
+
+            (outcome * 3) + curr
+        }).sum::<u16>() as i64
     }
 }
 
