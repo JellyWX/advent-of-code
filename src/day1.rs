@@ -49,5 +49,3 @@ fn part2(input: &str) -> i64 {
 
     (a + b + c) as i64
 }
-
-
