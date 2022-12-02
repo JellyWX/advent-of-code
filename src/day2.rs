@@ -14,12 +14,9 @@ fn part1(input_: &[u8]) -> i64 {
         transmute::<&[u8], &[u32]>(&input[0..input.len() / 4]).iter().map(|chr| {
             let chrs    = transmute::<u32, [u16; 2]>((*chr & 0x00FF00FF) - MASK);
 
-            let prev    = chrs[0];
-            let curr    = chrs[1];
+            let outcome = (chrs[0] * 2 + chrs[1]) % 3;
 
-            let outcome = (prev * 2 + curr) % 3;
-
-            (outcome * 3) + curr
+            outcome * 3 + chrs[1]
         }).sum::<u16>() as i64
     }
 }
@@ -28,25 +25,13 @@ fn part1(input_: &[u8]) -> i64 {
 fn part2(input_: &[u8]) -> i64 {
     let input = [input_, b"\n"].concat();
 
-    input.as_slice().iter().fold((0_i64, [0,0,0_u8], 0), |(val, mut s, ctr), x| match x {
-        b'\n' => {
-            (val + match s {
-                [65, 32, 88] => 3, // AX
-                [65, 32, 89] => 4, // AY
-                [65, 32, 90] => 8, // AZ
-                [66, 32, 88] => 1, // BX
-                [66, 32, 89] => 5, // BY
-                [66, 32, 90] => 9, // BZ
-                [67, 32, 88] => 2, // CX
-                [67, 32, 89] => 6, // CY
-                [67, 32, 90] => 7, // CZ
-                _ => 0
-            }, [0,0,0], 0)
-        }
-        x => {
-            s[ctr] = *x;
-            (val, s, ctr + 1)
-        }
+    unsafe {
+        transmute::<&[u8], &[u32]>(&input[0..input.len() / 4]).iter().map(|chr| {
+            let chrs    = transmute::<u32, [u16; 2]>((*chr & 0x00FF00FF) - 0x00580041);
+
+            let played = (chrs[0] + chrs[1] + 2) % 3;
+
+            chrs[1] * 3 + played + 1
+        }).sum::<u16>() as i64
     }
-    ).0
 }
