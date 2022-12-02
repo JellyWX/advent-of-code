@@ -1,30 +1,28 @@
 use aoc_runner_derive::{aoc};
+use std::mem::transmute;
+
+const X: i64 = b'X' as i64;
+const A: i64 = b'A' as i64;
 
 #[aoc(day2, part1)]
 fn part1(input_: &[u8]) -> i64 {
     let input = [input_, b"\n"].concat();
 
-    input.as_slice().iter().fold((0_i64, [0,0,0_u8], 0), |(val, mut s, ctr), x| match x {
-        b'\n' => {
-            (val + match s {
-                [65, 32, 88] => 4,
-                [65, 32, 89] => 8,
-                [65, 32, 90] => 3,
-                [66, 32, 88] => 1,
-                [66, 32, 89] => 5,
-                [66, 32, 90] => 9,
-                [67, 32, 88] => 7,
-                [67, 32, 89] => 2,
-                [67, 32, 90] => 6,
-                _ => 0
-            }, [0,0,0], 0)
+    unsafe {
+        transmute::<&[u8], &[u16]>(&input[0..input.len() / 2]).iter().fold((0_i64, 0, false), |(val, prev, ctr), chr| match ctr {
+            false => {
+                (val, transmute::<u16, [u8; 2]>(*chr)[0] as i64, true)
+            }
+            true => {
+                let chr     = transmute::<u16, [u8; 2]>(*chr)[0] as i64;
+                let bonus   = chr - X + 1;
+                let outcome = ((prev - A) * 2 + bonus) % 3;
+                
+                (val + (outcome * 3) + bonus, 0, false)
+            }
         }
-        x => {
-            s[ctr] = *x;
-            (val, s, ctr + 1)
-        }
+        ).0
     }
-    ).0
 }
 
 #[aoc(day2, part2)]
