@@ -1,5 +1,4 @@
 use aoc_runner_derive::{aoc};
-use std::mem::transmute;
 
 const ZERO: u8 = 48;
 
